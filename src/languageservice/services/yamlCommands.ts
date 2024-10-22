@@ -9,6 +9,10 @@ import { CommandExecutor } from '../../languageserver/commandExecutor';
 import { URI } from 'vscode-uri';
 
 export function registerCommands(commandExecutor: CommandExecutor, connection: Connection): void {
+  commandExecutor.registerCommand(YamlCommands.JUMP_TO_JOB, async (uri: string) => {
+    console.error('Jump to job not implemented');
+  });
+
   commandExecutor.registerCommand(YamlCommands.JUMP_TO_SCHEMA, async (uri: string) => {
     if (!uri) {
       return;
