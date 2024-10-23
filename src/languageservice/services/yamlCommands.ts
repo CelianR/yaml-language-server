@@ -3,10 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Connection } from 'vscode-languageserver';
+import { Connection, RequestType } from 'vscode-languageserver';
 import { YamlCommands } from '../../commands';
 import { CommandExecutor } from '../../languageserver/commandExecutor';
 import { URI } from 'vscode-uri';
+import { getJobNodes } from './gitlabciUtils';
+import { yamlDocumentsCache } from '../parser/yaml-documents';
 
 export function registerCommands(commandExecutor: CommandExecutor, connection: Connection): void {
   commandExecutor.registerCommand(YamlCommands.JUMP_TO_SCHEMA, async (uri: string) => {
@@ -35,5 +37,28 @@ export function registerCommands(commandExecutor: CommandExecutor, connection: C
     if (!result) {
       connection.window.showErrorMessage(`Cannot open ${uri}`);
     }
+  });
+}
+
+// Command handler to get all jobs names and their locations
+export function registerGetJobsInformation(connection, yamlSettings) {
+  const getJobsInformation: RequestType<void, object[], unknown> = new RequestType('yaml/getJobsInformation');
+  connection?.onRequest(getJobsInformation, async () => {
+    if (!yamlSettings?.gitlabci?.enabled) {
+      return [];
+    }
+
+    const jobNodes = getJobNodes(yamlDocumentsCache.getAllDocuments());
+    const results = [];
+    for (let [locationLink, _, node] of jobNodes) {
+      const result = {
+        jobName: node.key,
+        locationUri: locationLink.targetUri,
+        locationRange: locationLink.targetRange,
+      };
+      results.push(result);
+    }
+
+    return results;
   });
 }

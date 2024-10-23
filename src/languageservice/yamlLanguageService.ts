@@ -39,6 +39,7 @@ import {
   Connection,
   DocumentOnTypeFormattingParams,
   DefinitionParams,
+  RequestType,
 } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { getFoldingRanges } from './services/yamlFolding';
@@ -54,6 +55,10 @@ import { SettingsState } from '../yamlSettings';
 import { JSONSchemaSelection } from '../languageserver/handlers/schemaSelectionHandlers';
 import { YamlDefinition } from './services/yamlDefinition';
 import { getSelectionRanges } from './services/yamlSelectionRanges';
+import { workspaceContext } from './services/schemaRequestHandler';
+import { isPair } from 'yaml';
+import { getJobNodes } from './services/gitlabciUtils';
+import { registerGetJobsInformation } from './services/yamlCommands';
 
 export enum SchemaPriority {
   SchemaStore = 1,
@@ -210,6 +215,8 @@ export function getLanguageService(params: {
   const yamlDefinition = new YamlDefinition(params.telemetry, params.yamlSettings);
 
   new JSONSchemaSelection(schemaService, params.yamlSettings, params.connection);
+
+  registerGetJobsInformation(params.connection, params.yamlSettings);
 
   return {
     configure: (settings) => {
