@@ -165,6 +165,7 @@ export interface SchemaConfiguration {
 export interface CustomFormatterOptions {
   singleQuote?: boolean;
   bracketSpacing?: boolean;
+  trailingComma?: boolean;
   proseWrap?: string;
   printWidth?: number;
   enable?: boolean;
@@ -180,7 +181,7 @@ export interface LanguageService {
   findDocumentSymbols2: (document: TextDocument, context?: DocumentSymbolsContext) => DocumentSymbol[];
   findLinks: (document: TextDocument) => Promise<DocumentLink[]>;
   resetSchema: (uri: string) => boolean;
-  doFormat: (document: TextDocument, options?: CustomFormatterOptions) => TextEdit[];
+  doFormat: (document: TextDocument, options?: CustomFormatterOptions) => Promise<TextEdit[]>;
   doDefinition: (document: TextDocument, params: DefinitionParams) => DefinitionLink[] | undefined;
   doDocumentOnTypeFormatting: (document: TextDocument, params: DocumentOnTypeFormattingParams) => TextEdit[] | undefined;
   addSchema: (schemaID: string, schema: JSONSchema) => void;
@@ -238,7 +239,7 @@ export function getLanguageService(params: {
       }
       yamlValidation.configure(settings);
       hover.configure(settings);
-      completer.configure(settings);
+      completer.configure(settings, params.yamlSettings);
       formatter.configure(settings);
       yamlCodeActions.configure(settings);
     },
